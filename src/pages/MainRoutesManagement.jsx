@@ -141,7 +141,7 @@ const handleOpenEditRouteModal = (route)=>{
         </button>
       </div>
 
-      <div className="container">
+      <div className="container table-responsive">
         <table className="table table-striped table-hover mt-3 text-center">
           <thead>
             <tr>
