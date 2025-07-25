@@ -154,7 +154,7 @@ const closedAddDriverModal = ()=>{
           <i class="fa-solid fa-user-plus me-2"></i>Add Driver
         </button>
       </div>
-      <div className="container">
+      <div className="container table-responsive">
         <table className="table table-striped table-hover  my-3 text-center">
           <thead>
             <tr>
