@@ -7,6 +7,27 @@ function Login() {
   const [loginEmail, setLoginEmail] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
 
+  const login = async()=>{
+    if(loginEmail === ""){
+        toast.warning("Email field cannot be empty!")
+        return
+    }
+     if(loginEmail === ""){
+        toast.warning("Email field cannot be empty!")
+        return
+    }
+     if(!/\S+@\S+\.\S+/.test(loginEmail)){
+        toast.warning("Valid Email is required!")
+        return
+    }
+
+    try {
+        
+    } catch (error) {
+        
+    }
+  }
+
   return (
     <div className="container my-5">
       <ToastContainer />
