@@ -49,6 +49,7 @@ function RoutesManagement({ mode, data }) {
       setPoints(enrichedPoints);
     }
   }, [data]);
+  
 
   useEffect(() => {
     if (points.length < 2) return;
@@ -115,7 +116,11 @@ function RoutesManagement({ mode, data }) {
   };
 
   const deletePoint = (id) => {
+      if(points.length === 1){
+      setTotalDistance(0)
+    }
     setPoints((prevPoints) => prevPoints.filter((point) => point.id !== id));
+  
   };
 
   const onDragEnd = (result) => {
@@ -222,7 +227,7 @@ function RoutesManagement({ mode, data }) {
         </div>
       </div>
 
-      {/* Right Panel */}
+ 
       <div className="col-12 col-md-8">
         {/* Search bar */}
       <div className="input-group mb-2">

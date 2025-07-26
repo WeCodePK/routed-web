@@ -70,8 +70,9 @@ function MainRoutesManagement() {
   useEffect(() => {
     getRoutes();
   }, []);
+  
 
-  // 📌 Auto route from points when modal opens
+
   useEffect(() => {
     if (!viewRouteModalOpen || points.length < 2) return;
 
