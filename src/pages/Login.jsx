@@ -2,12 +2,13 @@ import React, { useState } from 'react'
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import login from "../images/login.png"
+import axios from 'axios';
 
 function Login() {
   const [loginEmail, setLoginEmail] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
 
-  const login = async()=>{
+  const loginRequest = async()=>{
     if(loginEmail === ""){
         toast.warning("Email field cannot be empty!")
         return
@@ -20,9 +21,16 @@ function Login() {
         toast.warning("Valid Email is required!")
         return
     }
+    const payload = {
+        email : loginEmail,
+        password : loginPassword
+    }
 
     try {
-        
+        const response = await axios.post("https://routed-backend.wckd.pk/api/v0/auth/admin/login", payload)
+        if(response.status === 200){
+            alert("Login SUccessfully")
+        }
     } catch (error) {
         
     }
@@ -82,11 +90,12 @@ function Login() {
             <label>Password</label>
             <input
               type="password"
-              className="form-control mb-4"
+              className="form-control mb-2"
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
               placeholder="Enter your password"
             />
+            <p className='d-flex justify-content-end text-secondary' style={{ cursor : "pointer"}}>Forgot Password?</p>
 
             <button className="btn btn-primary w-100">Login</button>
           </div>
