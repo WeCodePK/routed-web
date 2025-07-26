@@ -1,6 +1,7 @@
 import React, { use, useState } from "react";
  import { useNavigate, Link } from "react-router-dom";
- const navigate = useNavigate();
+ import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 function SideBar() {
 
      const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -11,6 +12,13 @@ function SideBar() {
     setIsDrawerOpen(!isDrawerOpen);
   };
   const navigate = useNavigate();
+
+  const handleLogout = ()=>{
+    toast.success("LogOut Succefully")
+    setTimeout(() => {
+      navigate('/')
+    }, 2000);
+  }
 
 
 
@@ -243,6 +251,7 @@ function SideBar() {
                 to="/"
                 className="d-flex align-items-center py-3 px-4  text-decoration-none"
                 style={{ color: textColor }}
+                onClick={handleLogout}
               >
                 	<i class="fas fa-sign-out-alt me-2"></i>
                 Log Out
