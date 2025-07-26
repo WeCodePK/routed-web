@@ -9,18 +9,23 @@ function Login() {
   const [loginPassword, setLoginPassword] = useState("")
 
 const loginRequest = async () => {
+  console.log("Login request started");
+
   if (loginEmail === "") {
     toast.warning("Email field cannot be empty!");
+    console.log("Validation failed: email is empty");
     return;
   }
 
   if (!/\S+@\S+\.\S+/.test(loginEmail)) {
     toast.warning("Valid Email is required!");
+    console.log("Validation failed: email is not valid format");
     return;
   }
 
   if (loginPassword === "") {
     toast.warning("Password field cannot be empty!");
+    console.log("Validation failed: password is empty");
     return;
   }
 
@@ -29,25 +34,33 @@ const loginRequest = async () => {
     password: loginPassword,
   };
 
+  console.log("Sending login request with payload:", payload);
+
   try {
     const response = await axios.post(
       "https://routed-backend.wckd.pk/api/v0/auth/admin/login",
       payload
     );
-    
+
+    console.log("Server responded with:", response);
+
     if (response.status === 200) {
       toast.success("Login successfully!");
-      // You can also redirect here if needed
+      console.log("Login successful!");
     }
   } catch (error) {
-    // Handle login errors
+    console.log("Login failed with error:", error);
+
     if (error.response && error.response.data && error.response.data.message) {
       toast.error(error.response.data.message);
+      console.log("Server error message:", error.response.data.message);
     } else {
       toast.error("Login failed. Please try again.");
+      console.log("Unknown login failure");
     }
   }
 };
+
 
 
   return (
