@@ -10,13 +10,14 @@ import Login from './pages/Login';
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />}>
+       <Route path="/" element={<Login />} />
+      <Route path="/home" element={<Home />}>
         <Route index element={<div>Welcome to Routed Admin</div>} />
         <Route path="drivers" element={<DriverList />} />
         <Route path="routes" element={<RoutesManagement />} />
         <Route path="mainRoutes" element={<MainRoutesManagement />} />
         <Route path="assignRoutes" element={<AssignRoutes />} />
-        <Route path="login" element={<Login />} />
+       
         
       </Route>
     </Routes>

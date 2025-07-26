@@ -3,6 +3,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import login from "../images/login.png";
 import axios from "axios";
+import {useNavigate} from "react-router-dom";
 
 function Login() {
   const [loginEmail, setLoginEmail] = useState("");
@@ -10,6 +11,7 @@ function Login() {
   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [forgetEmail, setForgetEmail] = useState("");
+  const navigate = useNavigate();
 
   
 
@@ -55,6 +57,7 @@ function Login() {
 
       if (response.status === 200) {
         toast.success("Login successfully!");
+        navigate("/home")
         console.log("Login successful!");
         setLoading(false)
       }
@@ -76,7 +79,16 @@ function Login() {
       setLoading(false)
     }
   };
+   const forgotPasswordRequest = ()=>{
+        if (!/\S+@\S+\.\S+/.test(forgetEmail)) {
+      toast.warning("Valid Email is required!");
+      setLoading(false)
+      setForgotPasswordModal(false)
+      return;
+    }
 
+
+   }
   return (
     <div className="container my-5">
       <ToastContainer />
@@ -196,7 +208,14 @@ function Login() {
                 ></button>
               </div>
               <div className="modal-body">
-               
+                     <label>Email</label>
+            <input
+              type="email"
+              className="form-control mb-3"
+              value={forgetEmail}
+              onChange={(e) => setForgetEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
               </div>
 
               <div className="modal-footer">
@@ -205,7 +224,7 @@ function Login() {
                 </button>
                 <button
                   className="btn btn-primary"
-                 // onClick={saveDriver}
+                 onClick={forgotPasswordRequest}
                   disabled={loading}
                 >
                   {loading === false ? (
