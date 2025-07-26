@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
  import { useNavigate, Link } from "react-router-dom";
+ const navigate = useNavigate();
 function SideBar() {
 
      const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -9,6 +10,11 @@ function SideBar() {
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
   };
+  const navigate = useNavigate();
+
+  const handleLogOut = ()=>{
+    navigate("/")
+  }
 
   return (
     <div>
@@ -239,6 +245,7 @@ function SideBar() {
                 to="/logout"
                 className="d-flex align-items-center py-3 px-4  text-decoration-none"
                 style={{ color: textColor }}
+                onClick={handleLogOut}
               >
                 	<i class="fas fa-sign-out-alt me-2"></i>
                 Log Out
