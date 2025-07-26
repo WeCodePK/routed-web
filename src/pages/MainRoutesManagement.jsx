@@ -54,7 +54,7 @@ function MainRoutesManagement() {
   const [openEditRouteModal, setOpenEditRouteModal] = useState(false);
 
   const handleaddRoutes = () => {
-    navigate("/routes");
+    navigate("/home/routes");
   };
 
   const getRoutes = async () => {
