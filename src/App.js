@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import { Routes, Route } from "react-router-dom";
 import MainRoutesManagement from './pages/MainRoutesManagement';
 import AssignRoutes from './pages/AssignRoutes';
+import Login from './pages/Login';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="routes" element={<RoutesManagement />} />
         <Route path="mainRoutes" element={<MainRoutesManagement />} />
         <Route path="assignRoutes" element={<AssignRoutes />} />
+        <Route path="login" element={<Login />} />
         
       </Route>
     </Routes>

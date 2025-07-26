@@ -193,7 +193,7 @@ function SideBar() {
             </li>
                  <li>
               <Link
-                to="/logout"
+                to="/login"
                 className="d-flex align-items-center py-3 px-4 text-decoration-none "
                 style={{ color: textColor }}
                 onClick={toggleDrawer}
