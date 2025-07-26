@@ -14,7 +14,7 @@ function SideBar() {
   const navigate = useNavigate();
 
   const handleLogout = ()=>{
-    toast.success("LogOut Succefully")
+    toast.success("Logout Successfully")
     setTimeout(() => {
       navigate('/')
     }, 2000);
@@ -159,7 +159,7 @@ function SideBar() {
           <ul className="list-unstyled m-0 p-0 ">
             <li className="nav-item">
               <Link
-                to="/signup"
+                to="/home/signup"
                 className="d-flex align-items-center py-3 px-4 text-decoration-none "
                 onClick={toggleDrawer}
                 style={{ color: textColor }}
@@ -172,7 +172,7 @@ function SideBar() {
           
             <li>
               <Link
-                to="/mainRoutes"
+                to="/home/mainRoutes"
                 className="d-flex align-items-center py-3 px-4 text-decoration-none "
                 style={{ color: textColor }}
                 onClick={toggleDrawer}
@@ -183,7 +183,7 @@ function SideBar() {
             </li>
             <li>
               <Link
-                to="/assignRoutes"
+                to="/home/assignRoutes"
                 className="d-flex align-items-center py-3 px-4  text-decoration-none "
                 style={{ color: textColor }}
                 onClick={toggleDrawer}
@@ -194,7 +194,7 @@ function SideBar() {
             </li>
             <li>
               <Link
-                to="/drivers"
+                to="/home/drivers"
                 className="d-flex align-items-center py-3 px-4 text-decoration-none "
                 style={{ color: textColor }}
                 onClick={toggleDrawer}
@@ -205,7 +205,7 @@ function SideBar() {
             </li>
                  <li>
               <Link
-                to="/diver"
+                to="/home/diver"
                 className="d-flex align-items-center py-3 px-4 text-decoration-none "
                 style={{ color: textColor }}
                 onClick={toggleDrawer}
@@ -218,7 +218,7 @@ function SideBar() {
             <li>
                   <li>
               <Link
-                to="/students"
+                to="/home/students"
                 className="d-flex align-items-center py-3 px-4 text-decoration-none"
                 style={{ color: textColor }}
                 onClick={toggleDrawer}
@@ -228,7 +228,7 @@ function SideBar() {
               </Link>
             </li>
               <Link
-                to="/profile"
+                to="/home/profile"
                 className="d-flex align-items-center py-3 px-4  text-decoration-none "
                 style={{ color: textColor }}
                 onClick={toggleDrawer}
