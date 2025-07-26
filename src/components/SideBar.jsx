@@ -12,9 +12,7 @@ function SideBar() {
   };
   const navigate = useNavigate();
 
-  const handleLogOut = ()=>{
-    navigate("/")
-  }
+
 
   return (
     <div>
@@ -222,7 +220,7 @@ function SideBar() {
               </Link>
             </li>
               <Link
-                to="/"
+                to="/profile"
                 className="d-flex align-items-center py-3 px-4  text-decoration-none "
                 style={{ color: textColor }}
                 onClick={toggleDrawer}
@@ -242,10 +240,9 @@ function SideBar() {
             />
             <li>
               <Link
-                to="/logout"
+                to="/"
                 className="d-flex align-items-center py-3 px-4  text-decoration-none"
                 style={{ color: textColor }}
-                onClick={handleLogOut}
               >
                 	<i class="fas fa-sign-out-alt me-2"></i>
                 Log Out
