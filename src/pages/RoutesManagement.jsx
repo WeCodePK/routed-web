@@ -39,6 +39,7 @@ function RoutesManagement({ mode, data }) {
   const [routeDescription, setRouteDescription] = useState(data?.description || "");
   const [totalDistance, setTotalDistance] = useState(data?.totalDistance || null);
   const [center, setCenter] = useState([33.6844, 73.0479]);
+  const token = localStorage.getItem("token")
 
   useEffect(() => {
     if (data?.points) {
@@ -95,7 +96,12 @@ function RoutesManagement({ mode, data }) {
     try {
       const response = await axios.post(
         "https://routed-backend.wckd.pk/api/v0/routes",
-        payload
+        payload,
+         {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
       );
       alert("Route saved successfully!");
     } catch (error) {

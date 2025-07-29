@@ -52,6 +52,7 @@ function MainRoutesManagement() {
   const [routePath, setRoutePath] = useState([]);
   const [totalDistance, setTotalDistance] = useState("");
   const [openEditRouteModal, setOpenEditRouteModal] = useState(false);
+  const token = localStorage.getItem("token")
 
   const handleaddRoutes = () => {
     navigate("/home/routes");
@@ -59,10 +60,16 @@ function MainRoutesManagement() {
 
   const getRoutes = async () => {
     try {
-      const response = await axios.get("https://routed-backend.wckd.pk/api/v0/routes");
+      const response = await axios.get("https://routed-backend.wckd.pk/api/v0/routes",
+        {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+      );
       setRoutes(response.data.route);
     } catch (error) {
-      console.error("Save failed:", error.response?.data || error.message);
+      console.error("Get Routes failed:", error.response?.data || error.message);
       alert("Route not get! " + (error.response?.data?.error || error.message));
     }
   };
@@ -103,7 +110,13 @@ function MainRoutesManagement() {
     const confirmDelete = window.confirm("Are you sure you want to delete this route?");
     if (!confirmDelete) return;
 
-    const response = await axios.delete(`https://routed-backend.wckd.pk/api/v0/routes/${route._id}`);
+    const response = await axios.delete(`https://routed-backend.wckd.pk/api/v0/routes/${route._id}`,
+      {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+    )
 
     if (response.status === 200) {
       alert("Route deleted successfully");

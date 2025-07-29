@@ -57,8 +57,11 @@ function Login() {
 
       if (response.status === 200) {
         toast.success("Login successfully!");
+       localStorage.setItem("token", response.data.data.jwt);
+console.log("token", response.data.data.jwt);
+
         navigate("/home")
-        console.log("Login successful!");
+       
         setLoading(false)
       }
     } catch (error) {
