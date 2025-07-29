@@ -59,7 +59,7 @@ function MainRoutesManagement() {
 
   const getRoutes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/routes/getRoutes");
+      const response = await axios.get("https://routed-backend.wckd.pk/api/v0/routes");
       setRoutes(response.data.route);
     } catch (error) {
       console.error("Save failed:", error.response?.data || error.message);
@@ -103,7 +103,7 @@ function MainRoutesManagement() {
     const confirmDelete = window.confirm("Are you sure you want to delete this route?");
     if (!confirmDelete) return;
 
-    const response = await axios.delete(`http://localhost:5000/api/routes/deleteRoute/${route._id}`);
+    const response = await axios.delete(`https://routed-backend.wckd.pk/api/v0/routes/${route._id}`);
 
     if (response.status === 200) {
       alert("Route deleted successfully");

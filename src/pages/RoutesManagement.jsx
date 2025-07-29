@@ -94,7 +94,7 @@ function RoutesManagement({ mode, data }) {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/routes/saveRoutes",
+        "https://routed-backend.wckd.pk/api/v0/routes",
         payload
       );
       alert("Route saved successfully!");
