@@ -67,7 +67,7 @@ function MainRoutesManagement() {
       },
     }
       );
-      setRoutes(response.data.route);
+      setRoutes(response.data.data.route);
     } catch (error) {
       console.error("Get Routes failed:", error.response?.data || error.message);
       alert("Route not get! " + (error.response?.data?.error || error.message));
