@@ -11,6 +11,7 @@ import {
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { useNavigate } from "react-router-dom";
 
 // 📍 Map click handler
 function ClickHandler({ addPoint }) {
@@ -40,6 +41,7 @@ function RoutesManagement({ mode, data }) {
   const [totalDistance, setTotalDistance] = useState(data?.totalDistance || null);
   const [center, setCenter] = useState([33.6844, 73.0479]);
   const token = localStorage.getItem("token")
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (data?.points) {
@@ -104,6 +106,7 @@ function RoutesManagement({ mode, data }) {
     }
       );
       alert("Route saved successfully!");
+      navigate("/home/mainRoutes")
     } catch (error) {
       console.error("Save failed:", error.response?.data || error.message);
       alert("Route not saved! " + (error.response?.data?.error || error.message));

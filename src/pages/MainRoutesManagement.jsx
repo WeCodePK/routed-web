@@ -67,7 +67,7 @@ function MainRoutesManagement() {
       },
     }
       );
-      setRoutes(response.data.data.route);
+      setRoutes(response.data.data.routes);
     } catch (error) {
       console.error("Get Routes failed:", error.response?.data || error.message);
       alert("Route not get! " + (error.response?.data?.error || error.message));
@@ -105,12 +105,13 @@ function MainRoutesManagement() {
     setSingleRouteData(route);
     setViewRouteModalOpen(true);
   };
- const deleteRoute = async (route) => {
+ const deleteRoute = async (index) => {
   try {
     const confirmDelete = window.confirm("Are you sure you want to delete this route?");
     if (!confirmDelete) return;
+    console.log("id",index )
 
-    const response = await axios.delete(`https://routed-backend.wckd.pk/api/v0/routes/${route._id}`,
+    const response = await axios.delete(`https://routed-backend.wckd.pk/api/v0/routes/${index}`,
       {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -185,7 +186,7 @@ const handleOpenEditRouteModal = (route)=>{
                     </button>
                     <button
                       className="btn btn-outline-danger btn-sm mx-1"
-                      onClick={() => deleteRoute(route)}
+                      onClick={() => deleteRoute(index)}
                     >
                       <i className="fa-solid fa-trash"></i>
                     </button>
