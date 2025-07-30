@@ -12,6 +12,8 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // 📍 Map click handler
 function ClickHandler({ addPoint }) {
@@ -32,15 +34,19 @@ function MapUpdater({ center }) {
   return null;
 }
 
-function RoutesManagement({ mode, data }) {
+function RoutesManagement({ mode, data , editTrigger, setEditTrigger, routeIndex}) {
   const [points, setPoints] = useState(data?.points || []);
   const [routePath, setRoutePath] = useState([]);
   const [query, setQuery] = useState("");
   const [routeName, setRouteName] = useState(data?.name || "");
-  const [routeDescription, setRouteDescription] = useState(data?.description || "");
-  const [totalDistance, setTotalDistance] = useState(data?.totalDistance || null);
+  const [routeDescription, setRouteDescription] = useState(
+    data?.description || ""
+  );
+  const [totalDistance, setTotalDistance] = useState(
+    data?.totalDistance || null
+  );
   const [center, setCenter] = useState([33.6844, 73.0479]);
-  const token = localStorage.getItem("token")
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,7 +58,6 @@ function RoutesManagement({ mode, data }) {
       setPoints(enrichedPoints);
     }
   }, [data]);
-  
 
   useEffect(() => {
     if (points.length < 2) return;
@@ -60,7 +65,8 @@ function RoutesManagement({ mode, data }) {
     const coords = points.map((p) => `${p.coords[1]},${p.coords[0]}`).join(";");
     const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
 
-    axios.get(url)
+    axios
+      .get(url)
       .then((res) => {
         const geo = res.data.routes[0].geometry.coordinates;
         const formatted = geo.map(([lng, lat]) => [lat, lng]);
@@ -80,41 +86,42 @@ function RoutesManagement({ mode, data }) {
     };
     setPoints((prev) => [...prev, newPoint]);
   };
-
+  const pointsWithPosition = points.map((point, index) => ({
+    name: point.name,
+    coords: point.coords,
+    position: index,
+  }));
+  const payload = {
+    name: routeName,
+    description: routeDescription,
+    totalDistance: totalDistance,
+    points: pointsWithPosition,
+  };
   const handleSaveRoutes = async () => {
-    const pointsWithPosition = points.map((point, index) => ({
-      name: point.name,
-      coords: point.coords,
-      position: index,
-    }));
-
-    const payload = {
-      name: routeName,
-      description: routeDescription,
-      totalDistance: totalDistance,
-      points: pointsWithPosition,
-    };
-
     try {
       const response = await axios.post(
         "https://routed-backend.wckd.pk/api/v0/routes",
         payload,
-         {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       alert("Route saved successfully!");
-      navigate("/home/mainRoutes")
+      navigate("/home/mainRoutes");
     } catch (error) {
       console.error("Save failed:", error.response?.data || error.message);
-      alert("Route not saved! " + (error.response?.data?.error || error.message));
+      alert(
+        "Route not saved! " + (error.response?.data?.error || error.message)
+      );
     }
   };
 
   const handleSearch = async () => {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+      query
+    )}`;
     const response = await fetch(url);
     const data = await response.json();
     if (data && data.length > 0) {
@@ -125,11 +132,10 @@ function RoutesManagement({ mode, data }) {
   };
 
   const deletePoint = (id) => {
-      if(points.length === 1){
-      setTotalDistance(0)
+    if (points.length === 1) {
+      setTotalDistance(0);
     }
     setPoints((prevPoints) => prevPoints.filter((point) => point.id !== id));
-  
   };
 
   const onDragEnd = (result) => {
@@ -154,13 +160,51 @@ function RoutesManagement({ mode, data }) {
     iconSize: [30, 42],
     iconAnchor: [15, 42],
   });
+  const handleEditRoutes = async () => {
+    console.log("editTrigger", editTrigger)
+     console.log("index", routeIndex)
+     console.log("Updating route ID:", data.id);
+    try {
+      const response = await axios.put(
+        `https://routed-backend.wckd.pk/api/v0/routes/${data.id}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success("Route updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating route:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to update route")
+     
+    }
+  };
+   useEffect(() => {
+    if (editTrigger) {
+      handleEditRoutes();
+      setEditTrigger(false)
+    }
+  }, [editTrigger]);
 
   return (
-    <div className="row g-3 p-3">
+    <>
+      <ToastContainer />
+      <div className="row g-3 p-3">
       {/* Left Panel */}
       <div className="col-12 col-md-4">
-        <div className="bg-white shadow p-4 rounded overflow-auto" style={{ maxHeight: "80vh" }}>
-          <h2 className="text-lg font-semibold mb-3 mt-2 text-center">Route Details</h2>
+        <div
+          className="bg-white shadow p-4 rounded overflow-auto"
+          style={{ maxHeight: "80vh" }}
+        >
+          <h2 className="text-lg font-semibold mb-3 mt-2 text-center">
+            Route Details
+          </h2>
 
           <label className="fw-bold mt-2">Route Name</label>
           <input
@@ -179,7 +223,9 @@ function RoutesManagement({ mode, data }) {
             onChange={(e) => setRouteDescription(e.target.value)}
           />
 
-          <h5 className="font-semibold mb-2 mt-4 text-center">Route Points (Drag to Reorder)</h5>
+          <h5 className="font-semibold mb-2 mt-4 text-center">
+            Route Points (Drag to Reorder)
+          </h5>
 
           <div className="alert alert-info text-center">
             <strong>Total Distance:</strong> {totalDistance} km
@@ -188,9 +234,17 @@ function RoutesManagement({ mode, data }) {
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="points">
               {(provided) => (
-                <ul {...provided.droppableProps} ref={provided.innerRef} className="list-unstyled">
+                <ul
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="list-unstyled"
+                >
                   {points.map((point, index) => (
-                    <Draggable key={point.id} draggableId={point.id} index={index}>
+                    <Draggable
+                      key={point.id}
+                      draggableId={point.id}
+                      index={index}
+                    >
                       {(provided) => (
                         <li
                           className="p-2 bg-light rounded shadow-sm d-flex justify-content-between align-items-center my-2"
@@ -236,22 +290,20 @@ function RoutesManagement({ mode, data }) {
         </div>
       </div>
 
- 
       <div className="col-12 col-md-8">
         {/* Search bar */}
-      <div className="input-group mb-2">
-  <input
-    type="text"
-    className="form-control"
-    placeholder="Search street, area, city..."
-    value={query}
-    onChange={(e) => setQuery(e.target.value)}
-  />
-  <button className="btn btn-primary" onClick={handleSearch}>
-    <i className="fa-solid fa-magnifying-glass-location"></i>
-  </button>
-</div>
-
+        <div className="input-group mb-2">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search street, area, city..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button className="btn btn-primary" onClick={handleSearch}>
+            <i className="fa-solid fa-magnifying-glass-location"></i>
+          </button>
+        </div>
 
         {/* Map */}
         <MapContainer
@@ -276,6 +328,8 @@ function RoutesManagement({ mode, data }) {
         </MapContainer>
       </div>
     </div>
+    </>
+    
   );
 }
 

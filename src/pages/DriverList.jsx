@@ -1,41 +1,44 @@
 import axios from "axios";
 import React, { useState , useEffect} from "react";
+import { useNavigate } from "react-router-dom";
 
 function DriverList() {
   const [addDriverModal, setAddDriverModal] = useState(false);
   const [name, setName] = useState("");
-  const [contact, setContact] = useState("");
-  const [passport, setPassport] = useState("");
-  const [cnic, setCnic] = useState("");
-  const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
+  const [phone, setphone] = useState("");
+  // const [passport, setPassport] = useState("");
+  // const [cnic, setCnic] = useState("");
+  // const [email, setEmail] = useState("");
+  // const [address, setAddress] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [driverInfoModal, setDriverInfoModal] = useState(false);
   const [drivers, setDrivers] = useState([]);
+    const navigate = useNavigate();
+    const token = localStorage.getItem("token");
 
   const validateForm = () => {
     const newErrors = {};
     if (!name.trim()) newErrors.name = "Name is required";
-    if (!contact.trim() || contact.length < 11)
-      newErrors.contact = "Valid 11 digit contact # is required";
-    if (!passport.trim()) newErrors.passport = "Passport # is required";
-    if (!cnic.trim() || cnic.length !== 13)
-      newErrors.cnic = "Valid 13 digit CNIC # is required";
-    if (!/\S+@\S+\.\S+/.test(email))
-      newErrors.email = "Valid email is required";
-    if (!address.trim()) newErrors.address = "Address is required";
+    if (!phone.trim() || phone.length < 11)
+      newErrors.phone = "Valid 11 digit phone # is required";
+    // if (!passport.trim()) newErrors.passport = "Passport # is required";
+    // if (!cnic.trim() || cnic.length !== 13)
+    //   newErrors.cnic = "Valid 13 digit CNIC # is required";
+    // if (!/\S+@\S+\.\S+/.test(email))
+    //   newErrors.email = "Valid email is required";
+    // if (!address.trim()) newErrors.address = "Address is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const resetFields = () => {
     setName("");
-    setEmail("");
-    setContact("");
-    setCnic("");
-    setAddress("");
-    setPassport("");
+    // setEmail("");
+    setphone("");
+    // setCnic("");
+    // setAddress("");
+    // setPassport("");
   };
 const saveDriver = async (e) => {
   e.preventDefault();
@@ -50,22 +53,25 @@ const saveDriver = async (e) => {
   try {
     const payload = {
       name,
-      email,
-      contact,
-      cnic,
-      passport,
-      address,
+      phone,
+    
     };
 
     console.log("Sending payload:", payload);
 
     const response = await axios.post(
-      "http://localhost:5000/api/drivers/saveDriver",
-      payload
+      "https://routed-backend.wckd.pk/api/v0/drivers",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
     );
 
     if (response.status === 200 || response.status === 201) {
       alert("Driver saved successfully");
+      getDriversData();
       resetFields();
       setAddDriverModal(false);
       setLoading(false);
@@ -82,20 +88,6 @@ const saveDriver = async (e) => {
 
     if (error.response && error.response.status === 400) {
       const status = error.response.data?.status;
-      const newErrors = {};
-
-      if (status === "email") {
-        newErrors.email = "Email is already registered";
-      } else if (status === "passport") {
-        newErrors.passport = "Passport is already registered";
-      } else if (status === "cnic") {
-        newErrors.cnic = "CNIC is already registered";
-      }
-      else if (status === "contact") {
-        newErrors.contact = "contact is already registered";
-      }
-
-      setErrors(newErrors);
       return false;
     }
 
@@ -112,8 +104,12 @@ const closedAddDriverModal = ()=>{
 
   const getDriversData = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/drivers/getDrivers");
-      setDrivers(response.data.driver);
+      const response = await axios.get("https://routed-backend.wckd.pk/api/v0/drivers",{
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setDrivers(response.data.data.drivers);
     } catch (error) {
       console.error("Save failed:", error.response?.data || error.message);
       alert("Route not get! " + (error.response?.data?.error || error.message));
@@ -126,11 +122,11 @@ const closedAddDriverModal = ()=>{
 
   const openDriverInfoModal = (driver)=>{
       setName(driver.name ? driver.name : "Loading");
-      setEmail(driver.email ? driver.email : "Loading");
-      setContact(driver.contact ? driver.contact : "Loading");
-      setCnic(driver.cnic ? driver.cnic : "Loading");
-      setPassport(driver.passport ? driver.passport : "Loading");
-      setAddress(driver.address ? driver.address : "Loading");
+      // setEmail(driver.email ? driver.email : "Loading");
+      setphone(driver.phone ? driver.phone : "Loading");
+      // setCnic(driver.cnic ? driver.cnic : "Loading");
+      // setPassport(driver.passport ? driver.passport : "Loading");
+      // setAddress(driver.address ? driver.address : "Loading");
 
       setDriverInfoModal(true);
   }
@@ -160,11 +156,7 @@ const closedAddDriverModal = ()=>{
             <tr>
               <th>#</th>
               <th>Name</th>
-              <th>Email</th>
-              <th>Contact#</th>
-              <th>Address</th>
-              <th>Cnic</th>
-              <th>Passport</th>
+              <th>phone#</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -176,12 +168,7 @@ const closedAddDriverModal = ()=>{
                     <td>{index + 1}</td>
                  
                     <td>{driver.name}</td>
-                    <td>{driver.email}</td>
-                    <td>{driver.contact}</td>
-                    <td>{driver.address}</td>
-                    <td>{driver.cnic}</td>
-                    <td>{driver.passport}</td>
-
+                    <td>{driver.phone}</td>
                     <td>
                       <button
                         className="btn btn-outline-success btn-sm mx-1"
@@ -256,81 +243,17 @@ const closedAddDriverModal = ()=>{
 
                   <div class="col-md-6">
                     <label for="validationServer02" class="form-label">
-                      <b>Contact #</b>
+                      <b>phone #</b>
                     </label>
                     <input
                       type="text"
                       className={`form-control ${
-                        errors.contact ? "is-invalid" : ""
+                        errors.phone ? "is-invalid" : ""
                       }`}
-                      value={contact}
-                      onChange={(e) => setContact(e.target.value)}
+                      value={phone}
+                      onChange={(e) => setphone(e.target.value)}
                     />
-                    <div className="invalid-feedback">{errors.contact}</div>
-                  </div>
-
-                  <div class="col-md-6">
-                    <label for="validationServer02" class="form-label">
-                      <b>Passport #</b>
-                    </label>
-                    <input
-                      type="text"
-                      className={`form-control ${
-                        errors.passport ? "is-invalid" : ""
-                      }`}
-                      value={passport}
-                      onChange={(e) => setPassport(e.target.value)}
-                    />
-                    <div className="invalid-feedback">{errors.passport}</div>
-                  </div>
-                  <div class="col-md-6">
-                    <label for="validationServer02" class="form-label">
-                      <b>Cnic #</b>
-                    </label>
-                    <input
-                      type="text"
-                      className={`form-control ${
-                        errors.cnic ? "is-invalid" : ""
-                      }`}
-                      value={cnic}
-                      onChange={(e) => setCnic(e.target.value)}
-                    />
-                    <div className="invalid-feedback">{errors.cnic}</div>
-                  </div>
-
-                  <div class="col-md-5">
-                    <label for="validationServerUsername" class="form-label">
-                      <b>Email</b>
-                    </label>
-                    <div class="input-group has-validation">
-                      <span class="input-group-text" id="inputGroupPrepend3">
-                        @
-                      </span>
-                      <input
-                        type="email"
-                        className={`form-control ${
-                          errors.email ? "is-invalid" : ""
-                        }`}
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                      <div className="invalid-feedback">{errors.email}</div>
-                    </div>
-                  </div>
-
-                  <div class="col-md-7">
-                    <label for="validationServer03" class="form-label">
-                      <b>Address</b>
-                    </label>
-                    <input
-                      type="text"
-                      className={`form-control ${
-                        errors.address ? "is-invalid" : ""
-                      }`}
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                    />
-                    <div className="invalid-feedback">{errors.address}</div>
+                    <div className="invalid-feedback">{errors.phone}</div>
                   </div>
                 </form>
               </div>
@@ -388,19 +311,7 @@ const closedAddDriverModal = ()=>{
                     <p><b>Driver Name:</b> {name}</p>
                   </div>
                   <div className="col-md-6">
-                    <p><b>Driver Email:</b> {email}</p>
-                  </div>
-                  <div className="col-md-6">
-                    <p><b>Driver Contact#:</b> {contact}</p>
-                  </div>
-                  <div className="col-md-6">
-                    <p><b>Driver Cnic#:</b> {cnic}</p>
-                  </div>
-                  <div className="col-md-6">
-                    <p><b>Driver Passport#:</b> {passport}</p>
-                  </div>
-                  <div className="col-md-6">
-                    <p><b>Driver Address:</b> {address}</p>
+                    <p><b>Driver phone#:</b> {phone}</p>
                   </div>
                   
                 </div>

@@ -13,6 +13,8 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import RoutesManagement from "./RoutesManagement";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
   const customIcon = L.divIcon({
@@ -51,6 +53,9 @@ function MainRoutesManagement() {
   const [points, setPoints] = useState([]);
   const [routePath, setRoutePath] = useState([]);
   const [totalDistance, setTotalDistance] = useState("");
+  const [editTrigger, setEditTrigger] = useState(false);
+  const [routeIndex, setRouteIndex] = useState("");
+  
   const [openEditRouteModal, setOpenEditRouteModal] = useState(false);
   const token = localStorage.getItem("token")
 
@@ -133,10 +138,24 @@ function MainRoutesManagement() {
   }
 };
 
-const handleOpenEditRouteModal = (route)=>{
+const handleOpenEditRouteModal = (route,index)=>{
+ 
     setEditRouteData(route);
+    setRouteIndex(index);
     setOpenEditRouteModal(true)
 }
+
+const handleEditRoutes =  () => {
+    setEditTrigger(true);
+   
+    setTimeout(() => {
+       setOpenEditRouteModal(false)
+          getRoutes();
+    }, 2000);
+   
+}
+
+
 
 
 
@@ -147,6 +166,7 @@ const handleOpenEditRouteModal = (route)=>{
 
   return (
     <div>
+          <ToastContainer />
       <h1 className="text-center mt-4">
         <i className="fa-solid fa-map-location-dot me-2"></i>Routes Management
       </h1>
@@ -180,7 +200,7 @@ const handleOpenEditRouteModal = (route)=>{
                   <td>
                     <button
                       className="btn btn-outline-success btn-sm mx-1"
-                      onClick={() => handleOpenEditRouteModal(route)}
+                      onClick={() => handleOpenEditRouteModal(route, index)}
                     >
                       <i className="fa-solid fa-pen-to-square"></i>
                     </button>
@@ -278,7 +298,7 @@ const handleOpenEditRouteModal = (route)=>{
                 <button type="button" className="btn-close" onClick={() => setOpenEditRouteModal(false)}></button>
               </div>
               <div className="modal-body">
-                <RoutesManagement mode = "edit" data = {editRouteData}/>
+                <RoutesManagement mode = "edit" data = {editRouteData} editTrigger= {editTrigger} setEditTrigger = {setEditTrigger} routeIndex={routeIndex}/>
               </div>
 
               <div className="modal-footer">
@@ -286,7 +306,7 @@ const handleOpenEditRouteModal = (route)=>{
                     <i class="fa-solid fa-xmark me-2"></i>
                   Close
                 </button>
-                <button className="btn btn-success" onClick={() => alert("Chnage saving")}>
+                <button className="btn btn-success" onClick={handleEditRoutes}>
                     <i class="fa-solid fa-check me-2"></i>
                   Save Changes
                 </button>
