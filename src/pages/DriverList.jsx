@@ -190,7 +190,8 @@ function DriverList() {
 
     if (response.status === 200 || response.status === 201) {
       alert("Driver updated successfully");
-      getDriversData(); // Refresh updated list
+      getDriversData(); 
+      resetFields();
       setDriverEditModal(false);
     } else {
       alert("Unexpected server response");

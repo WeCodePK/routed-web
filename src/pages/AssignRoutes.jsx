@@ -1,32 +1,122 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import RouteInfo from "../components/RouteInfo";
 function AssignRoutes() {
   const [openAssignRouteModal, setOpenAssignRouteModal] = useState(false);
   const [selectedRoutes, setSelectedRoutes] = useState([]);
+  const [singleRouteData, setSingleRouteData] = useState(null);
+  const [totalDistance, setTotalDistance] = useState("");
+  const [viewRouteModalOpen, setViewRouteModalOpen] = useState(false);
+  const [points, setPoints] = useState([]);
+  const [routePath, setRoutePath] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState("");
+  const [drivers, setDrivers] = useState([]);
+  const [routes, setRoutes] = useState([]);
+ const handleSelect = (incomingRoute) => {
+  const newRoute = incomingRoute.route || incomingRoute; // handle both structures
 
-  const handleSelect = (newRoute) => {
   const alreadySelected = selectedRoutes.some(
-    (route) => route._id === newRoute._id
+    (route) => route.name === newRoute.name
   );
+
   if (alreadySelected) {
     alert(`${newRoute.name} is already selected!`);
   } else {
+    console.log("new", newRoute);
+
     setSelectedRoutes((prevRoutes) => [...prevRoutes, newRoute]);
+    setPoints(Array.isArray(newRoute.points) ? newRoute.points : []);
+    setTotalDistance(newRoute.totalDistance || "0 km");
+    setSingleRouteData(newRoute);
   }
 };
 
+  const token = localStorage.getItem("token");
+
+  const getRoutes = async () => {
+    try {
+      const response = await axios.get(
+        "https://routed-backend.wckd.pk/api/v0/routes",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setRoutes(response.data.data.routes);
+    } catch (error) {
+      console.error(
+        "Get Routes failed:",
+        error.response?.data || error.message
+      );
+      alert("Route not get! " + (error.response?.data?.error || error.message));
+    }
+  };
+
+  useEffect(() => {
+    getRoutes();
+  }, []);
+  const getDriversData = async () => {
+    try {
+      const response = await axios.get(
+        "https://routed-backend.wckd.pk/api/v0/drivers",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setDrivers(response.data.data.drivers);
+    } catch (error) {
+      console.error("Save failed:", error.response?.data || error.message);
+      alert(
+        "Driver not get! " + (error.response?.data?.error || error.message)
+      );
+    }
+  };
+
+  useEffect(() => {
+    getDriversData();
+  }, []);
 
   const deleteRoute = (indexToRemove) => {
     setSelectedRoutes((prevRoutes) =>
       prevRoutes.filter((_, index) => index !== indexToRemove)
     );
   };
-  const closedAssignRouteModal = ()=>{
-      setOpenAssignRouteModal(false);
-  setSelectedRoutes([]);
-  setSelectedDriver("")
-  }
+  const closedAssignRouteModal = () => {
+    setOpenAssignRouteModal(false);
+    setSelectedRoutes([]);
+    setSelectedDriver("");
+  };
+  useEffect(() => {
+    if (!viewRouteModalOpen || points.length < 2) return;
+
+    const coords = points.map((p) => `${p.coords[1]},${p.coords[0]}`).join(";");
+    const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+
+    axios
+      .get(url)
+      .then((res) => {
+        const geo = res.data.routes[0].geometry.coordinates;
+        const formatted = geo.map(([lng, lat]) => [lat, lng]);
+        setRoutePath(formatted);
+
+        const distanceInMeter = res.data.routes[0].distance;
+        const distanceInKm = (distanceInMeter / 1000).toFixed(2);
+        setTotalDistance(distanceInKm);
+      })
+      .catch((err) => console.error("OSRM error:", err));
+  }, [viewRouteModalOpen, points]);
+
+  const openViewModal = (route) => {
+    setSingleRouteData(route);
+    setViewRouteModalOpen(true);
+  };
+  const center =
+    points.length > 0
+      ? points[Math.floor(points.length / 2)].coords
+      : [33.6844, 73.0479];
 
   return (
     <div>
@@ -50,11 +140,8 @@ function AssignRoutes() {
           <thead>
             <tr>
               <th>#</th>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Total Distance</th>
-              <th>Created at</th>
-              <th>Actions</th>
+              <th>Driver Name</th>
+              <th>Routes Name</th>
             </tr>
           </thead>
           <tbody>
@@ -113,7 +200,7 @@ function AssignRoutes() {
                   <button
                     type="button"
                     className="btn-close"
-                   onClick={closedAssignRouteModal}
+                    onClick={closedAssignRouteModal}
                   ></button>
                 </div>
                 <div className="modal-body">
@@ -131,33 +218,17 @@ function AssignRoutes() {
                           Select Driver
                         </button>
                         <ul className="dropdown-menu w-100">
-                          <li>
-                            <button
-                              className="dropdown-item"
-                              type="button"
-                              onClick={() => setSelectedDriver("Ali Khan")}
-                            >
-                              Ali Khan
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              className="dropdown-item"
-                              type="button"
-                              onClick={() => setSelectedDriver("Burhan Ali")}
-                            >
-                              Burhan Ali
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              className="dropdown-item"
-                              type="button"
-                              onClick={() => setSelectedDriver("Zain Ahmed")}
-                            >
-                              Zain Ahmed
-                            </button>
-                          </li>
+                          {drivers.map((driver, index) => (
+                            <li key={index}>
+                              <button
+                                className="dropdown-item"
+                                type="button"
+                                onClick={() => setSelectedDriver(driver.name)}
+                              >
+                                {driver.name}
+                              </button>
+                            </li>
+                          ))}
                         </ul>
                       </div>
 
@@ -172,84 +243,22 @@ function AssignRoutes() {
                           Select Route
                         </button>
                         <ul className="dropdown-menu w-100">
-                          <li>
-                            <button
-                              className="dropdown-item"
-                              type="button"
-                              onClick={() =>
-                                handleSelect({ name: "Route 1", _id: "1" })
-                              }
-                            >
-                              Route 1
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              className="dropdown-item"
-                              type="button"
-                              onClick={() =>
-                                handleSelect({ name: "Route 2", _id: "2" })
-                              }
-                            >
-                              Route 2
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              className="dropdown-item"
-                              type="button"
-                              onClick={() =>
-                                handleSelect({ name: "Route 3", _id: "3" })
-                              }
-                            >
-                              Route 3
-                            </button>
-                            <button
-                              className="dropdown-item"
-                              type="button"
-                              onClick={() =>
-                                handleSelect({ name: "Route 4", _id: "4" })
-                              }
-                            >
-                              Route 4
-                            </button>
-                            <button
-                              className="dropdown-item"
-                              type="button"
-                              onClick={() =>
-                                handleSelect({ name: "Route 5", _id: "5" })
-                              }
-                            >
-                              Route 5
-                            </button>
-                            <button
-                              className="dropdown-item"
-                              type="button"
-                              onClick={() =>
-                                handleSelect({ name: "Route 6", _id: "6" })
-                              }
-                            >
-                              Route 6
-                            </button>
-                            <button
-                              className="dropdown-item"
-                              type="button"
-                              onClick={() =>
-                                handleSelect({ name: "Route 7", _id: "7" })
-                              }
-                            >
-                              Route 7
-                            </button>
-                            <button
-                              className="dropdown-item"
-                              type="button"
-                              onClick={() =>
-                                handleSelect({ name: "Route 8", _id: "8" })
-                              }
-                            >
-                              Route 8
-                            </button>
-                          </li>
+                          {routes.map((route, index) => (
+                            <li key={route._id || index}>
+                              <button
+                                className="dropdown-item"
+                                type="button"
+                                onClick={() =>
+                                  handleSelect({
+                                  route
+
+                                  })
+                                }
+                              >
+                                {route.name}
+                              </button>
+                            </li>
+                          ))}
                         </ul>
                       </div>
                     </div>
@@ -267,52 +276,51 @@ function AssignRoutes() {
                         <p>
                           <strong>Assigned Routes:</strong>
                           <br />
-                       
-                            <div style={{ maxHeight: "250px", overflowY: "auto" }}>
-   <table className="table table-striped table-hover mt-3 text-center">
-                            <thead>
-                              <tr>
-                                <th>#</th>
-                                <th>Selected Routes</th>
-                                <th>Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {Array.isArray(selectedRoutes) &&
-                              selectedRoutes.length > 0 ? (
-                                selectedRoutes.map((route, index) => (
-                                  <tr key={route._id}>
-                                    <td>{index + 1}</td>
-                                    <td>{route.name}</td>
-                                    <td>
-                                      <button
-                                        className="btn btn-outline-danger btn-sm mx-1"
-                                        onClick={() => deleteRoute(index)}
-                                      >
-                                        <i className="fa-solid fa-trash"></i>
-                                      </button>
-                                      <button
-                                        className="btn btn-outline-primary btn-sm mx-1"
-                                        //onClick={() => openViewModal(route)}
-                                      >
-                                        <i class="fa-solid fa-location-arrow"></i>
-                                      </button>
+
+                          <div
+                            style={{ maxHeight: "250px", overflowY: "auto" }}
+                          >
+                            <table className="table table-striped table-hover mt-3 text-center">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Selected Routes</th>
+                                  <th>Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {Array.isArray(selectedRoutes) &&
+                                selectedRoutes.length > 0 ? (
+                                  selectedRoutes.map((route, index) => (
+                                    <tr key={route._id}>
+                                      <td>{index + 1}</td>
+                                      <td>{route.name}</td>
+                                      <td>
+                                        <button
+                                          className="btn btn-outline-danger btn-sm mx-1"
+                                          onClick={() => deleteRoute(index)}
+                                        >
+                                          <i className="fa-solid fa-trash"></i>
+                                        </button>
+                                        <button
+                                          className="btn btn-outline-primary btn-sm mx-1"
+                                          onClick={() => openViewModal(route)}
+                                        >
+                                          <i class="fa-solid fa-location-arrow"></i>
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan="7" className="text-center">
+                                      No Selected Routes
                                     </td>
                                   </tr>
-                                ))
-                              ) : (
-                                <tr>
-                                  <td colSpan="7" className="text-center">
-                                    No Selected Routes
-                                  </td>
-                                </tr>
-                              )}
-                            </tbody>
-                          </table>
-                            </div>
-                         
-
-                       
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
                         </p>
                       </div>
                     </div>
@@ -323,20 +331,33 @@ function AssignRoutes() {
                   <button
                     className="btn btn-danger"
                     onClick={closedAssignRouteModal}
-
                   >
                     <i class="fa-solid fa-xmark me-2"></i>
                     Close
                   </button>
-                      <button className="btn btn-success" onClick={() => alert("Chnage saving")}>
+                  <button
+                    className="btn btn-success"
+                    onClick={() => alert("Chnage saving")}
+                  >
                     <i class="fa-solid fa-check me-2"></i>
-                  Assign Route
-                </button>
+                    Assign Route
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </>
+      )}
+
+      {viewRouteModalOpen && singleRouteData && (
+        <RouteInfo
+          singleRouteData={singleRouteData}
+          setViewRouteModalOpen={setViewRouteModalOpen}
+          points={points}
+          routePath={routePath}
+          totalDistance={totalDistance}
+          center={center}
+        />
       )}
     </div>
   );
