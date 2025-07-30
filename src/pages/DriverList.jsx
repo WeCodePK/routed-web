@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState , useEffect} from "react";
 import { useNavigate } from "react-router-dom";
+import driver from "../images/driver.png";
 
 function DriverList() {
   const [addDriverModal, setAddDriverModal] = useState(false);
@@ -53,7 +54,7 @@ const saveDriver = async (e) => {
   try {
     const payload = {
       name,
-      phone,
+      phone
     
     };
 
@@ -112,7 +113,7 @@ const closedAddDriverModal = ()=>{
       setDrivers(response.data.data.drivers);
     } catch (error) {
       console.error("Save failed:", error.response?.data || error.message);
-      alert("Route not get! " + (error.response?.data?.error || error.message));
+      alert("Driver not get! " + (error.response?.data?.error || error.message));
     }
   };
 
@@ -207,82 +208,105 @@ const closedAddDriverModal = ()=>{
       </div>
 
       {addDriverModal && (
-        <div
-          className="modal show d-block"
-          tabIndex="-1"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-        >
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  <i class="fa-solid fa-user-plus me-2"></i>Add Driver
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={closedAddDriverModal}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <form class="row g-3">
-                  <div class="col-md-6">
-                    <label for="validationServer01" class="form-label">
-                      <b>Name</b>
-                    </label>
-                    <input
-                      type="text"
-                      className={`form-control ${
-                        errors.name ? "is-invalid" : ""
-                      }`}
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                    <div className="invalid-feedback">{errors.name}</div>
-                  </div>
+      <div
+  className="modal show d-block"
+  tabIndex="-1"
+  style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+>
+  <div className="modal-dialog modal-dialog-centered modal-lg">
+    <div className="modal-content shadow-lg rounded-4">
+      {/* Modal Header */}
+      <div className="modal-header bg-primary text-white">
+        <h5 className="modal-title">
+          <i className="fa-solid fa-user-plus me-2"></i> Add New Driver
+        </h5>
+        <button
+          type="button"
+          className="btn-close btn-close-white"
+          onClick={closedAddDriverModal}
+        ></button>
+      </div>
 
-                  <div class="col-md-6">
-                    <label for="validationServer02" class="form-label">
-                      <b>phone #</b>
-                    </label>
-                    <input
-                      type="text"
-                      className={`form-control ${
-                        errors.phone ? "is-invalid" : ""
-                      }`}
-                      value={phone}
-                      onChange={(e) => setphone(e.target.value)}
-                    />
-                    <div className="invalid-feedback">{errors.phone}</div>
-                  </div>
-                </form>
+      {/* Modal Body */}
+      <div className="modal-body px-4 py-4">
+        <div className="row align-items-center">
+          <h3 className="text-center text-primary mb-3">Driver Information</h3>
+          {/* Left Image + Text */}
+          <div className="col-md-6 rouded text-center mb-3 mb-md-0">
+            <img
+              src={driver}
+              alt="Driver"
+              className="img-fluid  mb-2 "
+              style={{ width: "250px", height: "250px", objectFit: "cover" }}
+            />
+            <p className="text-muted small">
+              "Every route tells a story — let's make it a good one."
+            </p>
+          </div>
+
+          {/* Form Section */}
+          <div className="col-md-6">
+            
+            <form className="row g-3">
+              <div className="col-md-12">
+                <label className="form-label">
+                  <b>Name</b>
+                </label>
+                <input
+                  type="text"
+                  className={`form-control ${errors.name ? "is-invalid" : ""}`}
+                  value={name}
+                  placeholder="Enter driver's name"
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <div className="invalid-feedback">{errors.name}</div>
               </div>
 
-              <div className="modal-footer">
-                <button
-                  className="btn btn-primary"
-                  onClick={saveDriver}
-                  disabled={loading}
-                >
-                  {loading === false ? (
-                    <>
-                      Submit
-                      <i className="fas fa-paper-plane ms-2"></i>
-                    </>
-                  ) : ( 
-                    <>
-                      Submitting...
-                      <div
-                        className="spinner-border spinner-border-sm text-dark ms-2"
-                        role="status"
-                      ></div>
-                    </>
-                  )}
-                </button>
+              <div className="col-md-12">
+                <label className="form-label">
+                  <b>Phone #</b>
+                </label>
+                <input
+                  type="text"
+                  className={`form-control ${errors.phone ? "is-invalid" : ""}`}
+                  value={phone}
+                  placeholder="e.g., 0300-1234567"
+                  onChange={(e) => setphone(e.target.value)}
+                />
+                <div className="invalid-feedback">{errors.phone}</div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
+      </div>
+
+      {/* Modal Footer */}
+      <div className="modal-footer">
+        <button
+          className="btn btn-primary w-100 py-2"
+          onClick={saveDriver}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              Saving...
+              <div
+                className="spinner-border spinner-border-sm text-light ms-2"
+                role="status"
+              ></div>
+            </>
+          ) : (
+            <>
+              Save Driver <i className="fas fa-user ms-2"></i>
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
       )}
 
 
