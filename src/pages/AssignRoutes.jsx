@@ -9,8 +9,9 @@ function AssignRoutes() {
   const [viewRouteModalOpen, setViewRouteModalOpen] = useState(false);
   const [points, setPoints] = useState([]);
   const [routePath, setRoutePath] = useState([]);
-  const [assignedDrivers, setAssignedDrivers] = useState([]);
-  const [assignedRoutes, setAssignedRoutes] = useState([]);
+const [selectedRoute, setSelectedRoute] = useState(null);
+const [showModal, setShowModal] = useState(false);
+
   const [assignments, setAssignments] = useState([]);
 
   const [selectedDriver, setSelectedDriver] = useState(null);
@@ -117,6 +118,8 @@ function AssignRoutes() {
         }
       );
       alert("Routes assigned successfully!");
+      setSelectedDriver(null)
+      setSelectedRoutes([]);
       getAssignedRoutes();
       setOpenAssignRouteModal(false);
     } catch (error) {
@@ -130,6 +133,11 @@ function AssignRoutes() {
       );
     }
   };
+  const handleRouteClick = (routeName) => {
+  setSelectedRoute(routeName);
+  setShowModal(true);
+};
+
 
   const getAssignedRoutes = async () => {
     try {
@@ -219,10 +227,10 @@ assignments?.forEach((assignment) => {
       id: driverId,
       name: assignment.driver.name,
       phone: assignment.driver.phone,
-      routes: [assignment.route.name],
+      routes: [assignment.route],
     };
   } else {
-    groupedDrivers[driverId].routes.push(assignment.route.name);
+    groupedDrivers[driverId].routes.push(assignment.route);
   }
 });
 
@@ -264,9 +272,9 @@ const groupedList = Object.values(groupedDrivers);
       <td>{driver.name}</td>
       <td>{driver.phone}</td>
       <td>
-  {driver.routes.map((routeName, idx) => (
-    <button key={idx} className="btn btn-sm btn-outline-dark me-1 mb-1">
-      {routeName}
+  {driver.routes.map((route, idx) => (
+    <button key={idx} className="btn btn-sm btn-outline-dark me-1 mb-1" onClick={() => handleRouteClick(route)}>
+      {route?.name}
     </button>
   ))}
 </td>
@@ -460,6 +468,57 @@ const groupedList = Object.values(groupedDrivers);
           center={center}
         />
       )}
+
+     {showModal && (
+  <div
+    className="modal fade show d-block"
+    tabIndex="-1"
+    style={{
+      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+      backdropFilter: 'blur(0px)',
+    }}
+  >
+    <div className="modal-dialog modal-sm modal-dialog-centered">
+      <div className="modal-content shadow" style={{ borderRadius: '10px' }}>
+        <div className="modal-header text-light py-2 px-3" style={{ backgroundColor: "#1e1e2f"}}>
+          <h6 className="modal-title m-0">
+            <i className="fa-solid fa-route me-2"></i>
+            	Route: <strong>{selectedRoute.name}</strong>
+          </h6>
+         <button
+  type="button"
+  className="btn-close btn-close-white"
+  aria-label="Close"
+  onClick={() => setShowModal(false)}
+></button>
+
+        </div>
+        <div className="modal-body text-center">
+          <p className="mb-3">What would you like to do?</p>
+          <button
+            className="btn btn-outline-primary w-100 mb-2"
+            onClick={() => {
+              setShowModal(false);
+              console.log('Viewing on map:', selectedRoute.name);
+            }}
+          >
+            <i className="fa-solid fa-map-location-dot me-2"></i> See on Map
+          </button>
+          <button
+            className="btn btn-outline-danger w-100"
+            onClick={() => {
+              setShowModal(false);
+              console.log('Unassigning route:', selectedRoute.name);
+            }}
+          >
+            <i className="fa-solid fa-trash-can me-2"></i> Unassign
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
