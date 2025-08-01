@@ -9,29 +9,40 @@ function AssignRoutes() {
   const [viewRouteModalOpen, setViewRouteModalOpen] = useState(false);
   const [points, setPoints] = useState([]);
   const [routePath, setRoutePath] = useState([]);
-  const [selectedDriver, setSelectedDriver] = useState("");
+  const [assignedDrivers, setAssignedDrivers] = useState([]);
+  const [assignedRoutes, setAssignedRoutes] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+
+  const [selectedDriver, setSelectedDriver] = useState(null);
   const [drivers, setDrivers] = useState([]);
   const [routes, setRoutes] = useState([]);
- const handleSelect = (incomingRoute) => {
-  const newRoute = incomingRoute.route || incomingRoute; // handle both structures
+  const handleSelect = (incomingRoute) => {
+    const newRoute = incomingRoute.route || incomingRoute; // handle both structures
 
-  const alreadySelected = selectedRoutes.some(
-    (route) => route.name === newRoute.name
-  );
+    const alreadySelected = selectedRoutes.some(
+      (route) => route.id === newRoute.id
+    );
 
-  if (alreadySelected) {
-    alert(`${newRoute.name} is already selected!`);
-  } else {
-    console.log("new", newRoute);
+    if (alreadySelected) {
+      alert(`${newRoute.name} is already selected!`);
+    } else {
+      console.log("new", newRoute);
 
-    setSelectedRoutes((prevRoutes) => [...prevRoutes, newRoute]);
-    setPoints(Array.isArray(newRoute.points) ? newRoute.points : []);
-    setTotalDistance(newRoute.totalDistance || "0 km");
-    setSingleRouteData(newRoute);
-  }
-};
+      setSelectedRoutes((prevRoutes) => [...prevRoutes, newRoute]);
+      // setPoints(Array.isArray(newRoute.points) ? newRoute.points : []);
+      // setTotalDistance(newRoute.totalDistance || "0 km");
+      // setSingleRouteData(newRoute);
+    }
+  };
 
   const token = localStorage.getItem("token");
+  const openviewRouteModal = (route) => {
+    setSingleRouteData(route);
+    setViewRouteModalOpen(true);
+    setPoints(route.points || []);
+    setRoutePath([]);
+    setTotalDistance(route.totalDistance || "0 km");
+  }
 
   const getRoutes = async () => {
     try {
@@ -79,6 +90,86 @@ function AssignRoutes() {
     getDriversData();
   }, []);
 
+  const routeAssign = async () => {
+    if (!selectedDriver) {
+      alert("Please select a driver.");
+      return;
+    }
+    if (selectedRoutes.length === 0) {
+      alert("Please select at least one route.");
+      return;
+    }
+    console.log("Selected Driver:", selectedDriver);
+
+    const payload = {
+      drivers: [selectedDriver.id],
+      routes: selectedRoutes.map((route) => route._id || route.id),
+    };
+
+    try {
+      const response = await axios.post(
+        "https://routed-backend.wckd.pk/api/v0/assignments",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      alert("Routes assigned successfully!");
+      getAssignedRoutes();
+      setOpenAssignRouteModal(false);
+    } catch (error) {
+      console.error(
+        "Assignment failed:",
+        error.response?.data || error.message
+      );
+      alert(
+        "Route assignment failed! " +
+          (error.response?.data?.error || error.message)
+      );
+    }
+  };
+
+  const getAssignedRoutes = async () => {
+    try {
+      const response = await axios.get(
+        "https://routed-backend.wckd.pk/api/v0/assignments",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // setAssignedRoutes(
+      //   response.data?.data?.assignments?.map(
+      //     (assignment) => assignment.route
+      //   ) || []
+      // );
+
+      // setAssignedDrivers(
+      //   response.data?.data?.assignments?.map(
+      //     (assignment) => assignment.driver
+      //   ) || []
+      // );
+      setAssignments(response.data?.data?.assignments || []);
+      alert("Assigned Routes fetched successfully!");
+    } catch (error) {
+      console.error(
+        "Assignment failed:",
+        error.response?.data || error.message
+      );
+      alert(
+        "Route assignment failed! " +
+          (error.response?.data?.error || error.message)
+      );
+    }
+  };
+  useEffect(() => {
+    getAssignedRoutes();
+  }, []);
+
   const deleteRoute = (indexToRemove) => {
     setSelectedRoutes((prevRoutes) =>
       prevRoutes.filter((_, index) => index !== indexToRemove)
@@ -118,6 +209,26 @@ function AssignRoutes() {
       ? points[Math.floor(points.length / 2)].coords
       : [33.6844, 73.0479];
 
+     
+const groupedDrivers = {};
+
+assignments?.forEach((assignment) => {
+  const driverId = assignment.driver.id;
+  if (!groupedDrivers[driverId]) {
+    groupedDrivers[driverId] = {
+      id: driverId,
+      name: assignment.driver.name,
+      phone: assignment.driver.phone,
+      routes: [assignment.route.name],
+    };
+  } else {
+    groupedDrivers[driverId].routes.push(assignment.route.name);
+  }
+});
+
+const groupedList = Object.values(groupedDrivers);
+
+
   return (
     <div>
       <h1 className="text-center mt-4">
@@ -141,47 +252,36 @@ function AssignRoutes() {
             <tr>
               <th>#</th>
               <th>Driver Name</th>
-              <th>Routes Name</th>
+              <th>Phone</th>
+              <th>Routes Assigned</th>
             </tr>
           </thead>
           <tbody>
-            {/* {Array.isArray(routes) && routes.length > 0 ? (
-              routes.map((route, index) => (
-                <tr key={route._id}>
-                  <td>{index + 1}</td>
-                  <td>{route.name}</td>
-                  <td>{route.description}</td>
-                  <td>{route.totalDistance}</td>
-                  <td>{new Date(route.createdAt).toLocaleDateString("en-GB")}</td>
-                  <td>
-                    <button
-                      className="btn btn-outline-success btn-sm mx-1"
-                      onClick={() => handleOpenEditRouteModal(route)}
-                    >
-                      <i className="fa-solid fa-pen-to-square"></i>
-                    </button>
-                    <button
-                      className="btn btn-outline-danger btn-sm mx-1"
-                      onClick={() => deleteRoute(route)}
-                    >
-                      <i className="fa-solid fa-trash"></i>
-                    </button>
-                    <button
-                      className="btn btn-outline-primary btn-sm mx-1"
-                      onClick={() => openViewModal(route)}
-                    >
-                      <i className="fas fa-info-circle"></i>
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" className="text-center">
-                  No Routes Available
-                </td>
-              </tr>
-            )} */}
+          {groupedList.length > 0 ? (
+  groupedList.map((driver, index) => (
+    <tr key={driver.id}>
+      <td>{index + 1}</td>
+      <td>{driver.name}</td>
+      <td>{driver.phone}</td>
+      <td>
+  {driver.routes.map((routeName, idx) => (
+    <button key={idx} className="btn btn-sm btn-outline-dark me-1 mb-1">
+      {routeName}
+    </button>
+  ))}
+</td>
+
+    </tr>
+  ))
+) : (
+  <tr>
+    <td colSpan="4" className="text-center">
+      No assignments found
+    </td>
+  </tr>
+)}
+
+
           </tbody>
         </table>
       </div>
@@ -207,7 +307,6 @@ function AssignRoutes() {
                   <div className="row">
                     {/* Left side: Buttons */}
                     <div className="col-md-4">
-                      {/* Driver Dropdown */}
                       <div className="dropdown w-100 mb-3">
                         <button
                           className="btn btn-primary dropdown-toggle w-100"
@@ -223,7 +322,7 @@ function AssignRoutes() {
                               <button
                                 className="dropdown-item"
                                 type="button"
-                                onClick={() => setSelectedDriver(driver.name)}
+                                onClick={() => setSelectedDriver(driver)}
                               >
                                 {driver.name}
                               </button>
@@ -250,8 +349,7 @@ function AssignRoutes() {
                                 type="button"
                                 onClick={() =>
                                   handleSelect({
-                                  route
-
+                                    route,
                                   })
                                 }
                               >
@@ -267,12 +365,18 @@ function AssignRoutes() {
                     <div className="col-md-8">
                       <div className="border p-3 rounded bg-light h-100">
                         <h5 className="text-center">Summary</h5>
-                        <p>
-                          <strong>Selected Driver:</strong>{" "}
-                          {selectedDriver
-                            ? selectedDriver
-                            : "No driver selected"}
-                        </p>
+                        {selectedDriver ? (
+                          <p>
+                            <strong>Selected Driver:</strong>{" "}
+                            {selectedDriver.name} <br />
+                            <strong>Phone:</strong> {selectedDriver.phone}
+                          </p>
+                        ) : (
+                          <p>
+                            <strong>Selected Driver:</strong> No driver selected
+                          </p>
+                        )}
+
                         <p>
                           <strong>Assigned Routes:</strong>
                           <br />
@@ -304,7 +408,7 @@ function AssignRoutes() {
                                         </button>
                                         <button
                                           className="btn btn-outline-primary btn-sm mx-1"
-                                          onClick={() => openViewModal(route)}
+                                          onClick={() => openviewRouteModal(route)}
                                         >
                                           <i class="fa-solid fa-location-arrow"></i>
                                         </button>
@@ -335,10 +439,7 @@ function AssignRoutes() {
                     <i class="fa-solid fa-xmark me-2"></i>
                     Close
                   </button>
-                  <button
-                    className="btn btn-success"
-                    onClick={() => alert("Chnage saving")}
-                  >
+                  <button className="btn btn-success" onClick={routeAssign}>
                     <i class="fa-solid fa-check me-2"></i>
                     Assign Route
                   </button>
