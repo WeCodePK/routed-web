@@ -10,8 +10,13 @@ import {
 
 } from "react-leaflet";
 import L from "leaflet";
+import axios from "axios";
 
-function RouteInfo({singleRouteData, setViewRouteModalOpen, points, routePath, totalDistance, center}) {
+function RouteInfo({viewRouteModalOpen,singleRouteData, setViewRouteModalOpen}) {
+    const [points, setPoints] = useState([]);
+      const [routePath, setRoutePath] = useState([]);
+        const [totalDistance, setTotalDistance] = useState("");
+   
     function ClickHandler({ addPoint }) {
       useMapEvents({
         click(e) {
@@ -20,12 +25,43 @@ function RouteInfo({singleRouteData, setViewRouteModalOpen, points, routePath, t
       });
       return null;
     }
+
+      const center =
+    points.length > 0
+      ? points[Math.floor(points.length / 2)].coords
+      : [33.6844, 73.0479];
     const customIcon = L.divIcon({
   className: "custom-div-icon",
   html: `<div style="color: red; font-size: 24px;"><i class="fas fa-map-marker-alt"></i></div>`,
   iconSize: [30, 42],
   iconAnchor: [15, 42],
 });
+ useEffect(() => {
+    if (!viewRouteModalOpen || points.length < 2) return;
+
+    const coords = points.map((p) => `${p.coords[1]},${p.coords[0]}`).join(";");
+    const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+
+    axios
+      .get(url)
+      .then((res) => {
+        const geo = res.data.routes[0].geometry.coordinates;
+        const formatted = geo.map(([lng, lat]) => [lat, lng]);
+        setRoutePath(formatted);
+
+        const distanceInMeter = res.data.routes[0].distance;
+        const distanceInKm = (distanceInMeter / 1000).toFixed(2);
+        setTotalDistance(distanceInKm);
+      })
+      .catch((err) => console.error("OSRM error:", err));
+  }, [viewRouteModalOpen, points]);
+
+  useEffect(() => {
+    if (viewRouteModalOpen) {
+       setPoints(singleRouteData.points || []);
+    setTotalDistance(singleRouteData.totalDistance || "0 km");
+    setRoutePath([]);
+    }}, [viewRouteModalOpen]);
 
 
 

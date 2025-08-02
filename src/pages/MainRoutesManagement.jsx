@@ -8,23 +8,18 @@ import RoutesManagement from "./RoutesManagement";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
-  
-
 function MainRoutesManagement() {
   const navigate = useNavigate();
   const [routes, setRoutes] = useState([]);
   const [singleRouteData, setSingleRouteData] = useState(null);
   const [editRouteData, setEditRouteData] = useState(null);
   const [viewRouteModalOpen, setViewRouteModalOpen] = useState(false);
-  const [points, setPoints] = useState([]);
-  const [routePath, setRoutePath] = useState([]);
-  const [totalDistance, setTotalDistance] = useState("");
+
   const [editTrigger, setEditTrigger] = useState(false);
   const [routeIndex, setRouteIndex] = useState("");
-  
+
   const [openEditRouteModal, setOpenEditRouteModal] = useState(false);
-  const token = localStorage.getItem("token")
+  const token = localStorage.getItem("token");
 
   const handleaddRoutes = () => {
     navigate("/home/routes");
@@ -32,16 +27,20 @@ function MainRoutesManagement() {
 
   const getRoutes = async () => {
     try {
-      const response = await axios.get("https://routed-backend.wckd.pk/api/v0/routes",
+      const response = await axios.get(
+        "https://routed-backend.wckd.pk/api/v0/routes",
         {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       setRoutes(response.data.data.routes);
     } catch (error) {
-      console.error("Get Routes failed:", error.response?.data || error.message);
+      console.error(
+        "Get Routes failed:",
+        error.response?.data || error.message
+      );
       alert("Route not get! " + (error.response?.data?.error || error.message));
     }
   };
@@ -49,96 +48,67 @@ function MainRoutesManagement() {
   useEffect(() => {
     getRoutes();
   }, []);
-  
-
-
-  useEffect(() => {
-    if (!viewRouteModalOpen || points.length < 2) return;
-
-    const coords = points.map((p) => `${p.coords[1]},${p.coords[0]}`).join(";");
-    const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
-
-    axios
-      .get(url)
-      .then((res) => {
-        const geo = res.data.routes[0].geometry.coordinates;
-        const formatted = geo.map(([lng, lat]) => [lat, lng]);
-        setRoutePath(formatted);
-
-        const distanceInMeter = res.data.routes[0].distance;
-        const distanceInKm = (distanceInMeter / 1000).toFixed(2);
-        setTotalDistance(distanceInKm);
-      })
-      .catch((err) => console.error("OSRM error:", err));
-  }, [viewRouteModalOpen, points]);
 
   const openViewModal = (route) => {
-    setPoints(route.points);
     setSingleRouteData(route);
     setViewRouteModalOpen(true);
   };
- const deleteRoute = async (index) => {
-  try {
-    const confirmDelete = window.confirm("Are you sure you want to delete this route?");
-    if (!confirmDelete) return;
-    console.log("id",index )
+  const deleteRoute = async (index) => {
+    try {
+      const confirmDelete = window.confirm(
+        "Are you sure you want to delete this route?"
+      );
+      if (!confirmDelete) return;
+      console.log("id", index);
 
-    const response = await axios.delete(`https://routed-backend.wckd.pk/api/v0/routes/${index}`,
-      {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      const response = await axios.delete(
+        `https://routed-backend.wckd.pk/api/v0/routes/${index}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Route deleted successfully");
+        getRoutes();
+      } else {
+        alert("Failed to delete the route.");
+      }
+    } catch (error) {
+      console.error("Error deleting route:", error);
+      alert("Something went wrong while deleting the route.");
     }
-    )
+  };
 
-    if (response.status === 200) {
-      alert("Route deleted successfully");
-      getRoutes();
-      
-    } else {
-      alert("Failed to delete the route.");
-    }
-
-  } catch (error) {
-    console.error("Error deleting route:", error);
-    alert("Something went wrong while deleting the route.");
-  }
-};
-
-const handleOpenEditRouteModal = (route,index)=>{
- 
+  const handleOpenEditRouteModal = (route, index) => {
     setEditRouteData(route);
     setRouteIndex(index);
-    setOpenEditRouteModal(true)
-}
+    setOpenEditRouteModal(true);
+  };
 
-const handleEditRoutes =  () => {
+  const handleEditRoutes = () => {
     setEditTrigger(true);
-   
+
     setTimeout(() => {
-       setOpenEditRouteModal(false)
-          getRoutes();
+      setOpenEditRouteModal(false);
+      getRoutes();
     }, 2000);
-   
-}
-
-
-
-
-
-  const center =
-    points.length > 0
-      ? points[Math.floor(points.length / 2)].coords
-      : [33.6844, 73.0479]; 
+  };
 
   return (
     <div>
-          <ToastContainer />
+      <ToastContainer />
       <h1 className="text-center mt-4">
         <i className="fa-solid fa-map-location-dot me-2"></i>Routes Management
       </h1>
       <div className="d-flex justify-content-end container">
-        <button type="button" className="btn btn-outline-dark mt-2" onClick={handleaddRoutes}>
+        <button
+          type="button"
+          className="btn btn-outline-dark mt-2"
+          onClick={handleaddRoutes}
+        >
           <i className="fa-solid fa-route me-2"></i>Add Route
         </button>
       </div>
@@ -163,7 +133,9 @@ const handleEditRoutes =  () => {
                   <td>{route.name}</td>
                   <td>{route.description}</td>
                   <td>{route.totalDistance}</td>
-                  <td>{new Date(route.createdAt).toLocaleDateString("en-GB")}</td>
+                  <td>
+                    {new Date(route.createdAt).toLocaleDateString("en-GB")}
+                  </td>
                   <td>
                     <button
                       className="btn btn-outline-success btn-sm mx-1"
@@ -199,46 +171,60 @@ const handleEditRoutes =  () => {
 
       {viewRouteModalOpen && singleRouteData && (
         <RouteInfo
+          viewRouteModalOpen={viewRouteModalOpen}
           singleRouteData={singleRouteData}
           setViewRouteModalOpen={setViewRouteModalOpen}
-          points={points}
-          routePath={routePath}
-          totalDistance={totalDistance}
-          center={center}
         />
       )}
 
+      {openEditRouteModal && (
+        <>
+          <div
+            className="modal show d-block"
+            tabIndex="-1"
+            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          >
+            <div className="modal-dialog modal-dialog-centered modal-fullscreen">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h4 className="modal-title">Edit Route</h4>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setOpenEditRouteModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <RoutesManagement
+                    mode="edit"
+                    data={editRouteData}
+                    editTrigger={editTrigger}
+                    setEditTrigger={setEditTrigger}
+                    routeIndex={routeIndex}
+                  />
+                </div>
 
-      {
-        openEditRouteModal &&(
-            <>
-             <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-dialog-centered modal-fullscreen">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h4 className="modal-title">Edit Route</h4>
-                <button type="button" className="btn-close" onClick={() => setOpenEditRouteModal(false)}></button>
-              </div>
-              <div className="modal-body">
-                <RoutesManagement mode = "edit" data = {editRouteData} editTrigger= {editTrigger} setEditTrigger = {setEditTrigger} routeIndex={routeIndex}/>
-              </div>
-
-              <div className="modal-footer">
-                 <button className="btn btn-danger" onClick={() => setOpenEditRouteModal(false)}>
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => setOpenEditRouteModal(false)}
+                  >
                     <i class="fa-solid fa-xmark me-2"></i>
-                  Close
-                </button>
-                <button className="btn btn-success" onClick={handleEditRoutes}>
+                    Close
+                  </button>
+                  <button
+                    className="btn btn-success"
+                    onClick={handleEditRoutes}
+                  >
                     <i class="fa-solid fa-check me-2"></i>
-                  Save Changes
-                </button>
+                    Save Changes
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-            </>
-        )
-      }
+        </>
+      )}
     </div>
   );
 }

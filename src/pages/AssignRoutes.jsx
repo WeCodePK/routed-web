@@ -5,10 +5,10 @@ function AssignRoutes() {
   const [openAssignRouteModal, setOpenAssignRouteModal] = useState(false);
   const [selectedRoutes, setSelectedRoutes] = useState([]);
   const [singleRouteData, setSingleRouteData] = useState(null);
-  const [totalDistance, setTotalDistance] = useState("");
+
   const [viewRouteModalOpen, setViewRouteModalOpen] = useState(false);
-  const [points, setPoints] = useState([]);
-  const [routePath, setRoutePath] = useState([]);
+  // const [points, setPoints] = useState([]);
+  // const [routePath, setRoutePath] = useState([]);
 const [selectedRoute, setSelectedRoute] = useState(null);
 const [showModal, setShowModal] = useState(false);
 
@@ -40,9 +40,7 @@ const [showModal, setShowModal] = useState(false);
   const openviewRouteModal = (route) => {
     setSingleRouteData(route);
     setViewRouteModalOpen(true);
-    setPoints(route.points || []);
-    setRoutePath([]);
-    setTotalDistance(route.totalDistance || "0 km");
+   
   }
 
   const getRoutes = async () => {
@@ -188,34 +186,13 @@ const [showModal, setShowModal] = useState(false);
     setSelectedRoutes([]);
     setSelectedDriver("");
   };
-  useEffect(() => {
-    if (!viewRouteModalOpen || points.length < 2) return;
-
-    const coords = points.map((p) => `${p.coords[1]},${p.coords[0]}`).join(";");
-    const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
-
-    axios
-      .get(url)
-      .then((res) => {
-        const geo = res.data.routes[0].geometry.coordinates;
-        const formatted = geo.map(([lng, lat]) => [lat, lng]);
-        setRoutePath(formatted);
-
-        const distanceInMeter = res.data.routes[0].distance;
-        const distanceInKm = (distanceInMeter / 1000).toFixed(2);
-        setTotalDistance(distanceInKm);
-      })
-      .catch((err) => console.error("OSRM error:", err));
-  }, [viewRouteModalOpen, points]);
+ 
 
   const openViewModal = (route) => {
     setSingleRouteData(route);
     setViewRouteModalOpen(true);
   };
-  const center =
-    points.length > 0
-      ? points[Math.floor(points.length / 2)].coords
-      : [33.6844, 73.0479];
+
 
      
 const groupedDrivers = {};
@@ -460,12 +437,9 @@ const groupedList = Object.values(groupedDrivers);
 
       {viewRouteModalOpen && singleRouteData && (
         <RouteInfo
+        viewRouteModalOpen={viewRouteModalOpen}
           singleRouteData={singleRouteData}
           setViewRouteModalOpen={setViewRouteModalOpen}
-          points={points}
-          routePath={routePath}
-          totalDistance={totalDistance}
-          center={center}
         />
       )}
 
@@ -498,8 +472,8 @@ const groupedList = Object.values(groupedDrivers);
           <button
             className="btn btn-outline-primary w-100 mb-2"
             onClick={() => {
+              openviewRouteModal(selectedRoute);
               setShowModal(false);
-              console.log('Viewing on map:', selectedRoute.name);
             }}
           >
             <i className="fa-solid fa-map-location-dot me-2"></i> See on Map
