@@ -18,23 +18,38 @@ function AssignRoutes() {
   const [drivers, setDrivers] = useState([]);
   const [routes, setRoutes] = useState([]);
   const handleSelect = (incomingRoute) => {
-    const newRoute = incomingRoute.route || incomingRoute; // handle both structures
+    const newRoute = incomingRoute.route || incomingRoute;
 
     const alreadySelected = selectedRoutes.some(
       (route) => route.id === newRoute.id
     );
 
+    const existingAssignData = assignments.find(
+      (assign) => assign.driver.id === selectedDriver.id
+    );
+
+
+    const existingRoute = existingAssignData?.route;
+
+    const routeAlreadyExists = existingRoute?.name === newRoute.name;
+
     if (alreadySelected) {
       alert(`${newRoute.name} is already selected!`);
+      return;
+    }
+    if (routeAlreadyExists) {
+      alert("This driver already has this route assigned.");
+      return;
     } else {
-      console.log("new", newRoute);
 
       setSelectedRoutes((prevRoutes) => [...prevRoutes, newRoute]);
-      // setPoints(Array.isArray(newRoute.points) ? newRoute.points : []);
-      // setTotalDistance(newRoute.totalDistance || "0 km");
-      // setSingleRouteData(newRoute);
     }
   };
+  const alreadyExistRoute = (driver) => {
+    console.log("▶️ Driver selected:", driver);
+    setSelectedDriver(driver);
+  };
+
 
   const token = localStorage.getItem("token");
   const openviewRouteModal = (route) => {
@@ -290,7 +305,7 @@ function AssignRoutes() {
                               <button
                                 className="dropdown-item"
                                 type="button"
-                                onClick={() => setSelectedDriver(driver)}
+                                onClick={() => alreadyExistRoute(driver)}
                               >
                                 {driver.name}
                               </button>
