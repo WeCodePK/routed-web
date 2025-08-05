@@ -6,7 +6,7 @@ import driver from "../images/driver.png";
 function DriverList() {
   const [addDriverModal, setAddDriverModal] = useState(false);
   const [name, setName] = useState("");
-  const [phone, setphone] = useState("");
+  const [email, setEmail] = useState("");
    const [driverIndex, setDriverIndex] = useState("");
   // const [cnic, setCnic] = useState("");
   // const [email, setEmail] = useState("");
@@ -22,13 +22,12 @@ function DriverList() {
   const validateForm = () => {
     const newErrors = {};
     if (!name.trim()) newErrors.name = "Name is required";
-    if (!phone.trim() || phone.length < 11)
-      newErrors.phone = "Valid 11 digit phone # is required";
+    if (!email.trim() || email.length < 11)
     // if (!passport.trim()) newErrors.passport = "Passport # is required";
     // if (!cnic.trim() || cnic.length !== 13)
     //   newErrors.cnic = "Valid 13 digit CNIC # is required";
-    // if (!/\S+@\S+\.\S+/.test(email))
-    //   newErrors.email = "Valid email is required";
+    if (!/\S+@\S+\.\S+/.test(email))
+      newErrors.email = "Valid email is required";
     // if (!address.trim()) newErrors.address = "Address is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -37,14 +36,14 @@ function DriverList() {
   const resetFields = () => {
     setName("");
     // setEmail("");
-    setphone("");
+    setEmail("");
     // setCnic("");
     // setAddress("");
     // setPassport("");
   };
   const payload = {
     name,
-    phone,
+    email,
   };
   const saveDriver = async (e) => {
     e.preventDefault();
@@ -97,6 +96,7 @@ function DriverList() {
 
   const closedAddDriverModal = () => {
     setErrors({});
+    resetFields();
     setAddDriverModal(false);
   };
 
@@ -126,7 +126,7 @@ function DriverList() {
   const openDriverInfoModal = (driver) => {
     setName(driver.name ? driver.name : "Loading");
     // setEmail(driver.email ? driver.email : "Loading");
-    setphone(driver.phone ? driver.phone : "Loading");
+    setEmail(driver.email ? driver.email : "Loading");
     // setCnic(driver.cnic ? driver.cnic : "Loading");
     // setPassport(driver.passport ? driver.passport : "Loading");
     // setAddress(driver.address ? driver.address : "Loading");
@@ -165,7 +165,7 @@ function DriverList() {
 
   const openEditModal = (driver, index) => {
     setName(driver.name); 
-    setphone(driver.phone);
+    setEmail(driver.email);
     setDriverIndex(driver.id);
      setDriverEditModal(true);
   }
@@ -228,7 +228,7 @@ function DriverList() {
             <tr>
               <th>#</th>
               <th>Name</th>
-              <th>phone#</th>
+              <th>Email#</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -240,7 +240,7 @@ function DriverList() {
                     <td>{index + 1}</td>
 
                     <td>{driver.name}</td>
-                    <td>{driver.phone}</td>
+                    <td>{driver.email}</td>
                     <td>
                       <button
                         className="btn btn-outline-success btn-sm mx-1"
@@ -342,18 +342,18 @@ function DriverList() {
 
                       <div className="col-md-12">
                         <label className="form-label">
-                          <b>Phone #</b>
+                          <b>Email </b>
                         </label>
                         <input
                           type="text"
                           className={`form-control ${
-                            errors.phone ? "is-invalid" : ""
+                            errors.email ? "is-invalid" : ""
                           }`}
-                          value={phone}
-                          placeholder="e.g., 0300-1234567"
-                          onChange={(e) => setphone(e.target.value)}
+                          value={email}
+                          placeholder="e.g., abc123@example.com"
+                          onChange={(e) => setEmail(e.target.value)}
                         />
-                        <div className="invalid-feedback">{errors.phone}</div>
+                        <div className="invalid-feedback">{errors.email}</div>
                       </div>
                     </form>
                   </div>
@@ -415,7 +415,7 @@ function DriverList() {
                     </div>
                     <div className="col-md-6">
                       <p>
-                        <b>Driver phone#:</b> {phone}
+                        <b>Driver Email:</b> {email}
                       </p>
                     </div>
                   </div>
@@ -489,18 +489,18 @@ function DriverList() {
 
                     <div className="col-md-12">
                       <label className="form-label">
-                        <b>Phone #</b>
+                        <b>Email</b>
                       </label>
                       <input
                         type="text"
                         className={`form-control ${
-                          errors.phone ? "is-invalid" : ""
+                          errors.email ? "is-invalid" : ""
                         }`}
-                        value={phone}
+                        value={email}
                         placeholder="e.g., 0300-1234567"
-                        onChange={(e) => setphone(e.target.value)}
+                        onChange={(e) => setEmail(e.target.value)}
                       />
-                      <div className="invalid-feedback">{errors.phone}</div>
+                      <div className="invalid-feedback">{errors.email}</div>
                     </div>
                   </form>
                 </div>

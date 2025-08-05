@@ -132,7 +132,7 @@ function MainRoutesManagement() {
                   <td>{index + 1}</td>
                   <td>{route.name}</td>
                   <td>{route.description}</td>
-                  <td>{route.totalDistance}</td>
+                  <td>{`${route.totalDistance} km`}</td>
                   <td>
                     {new Date(route.createdAt).toLocaleDateString("en-GB")}
                   </td>

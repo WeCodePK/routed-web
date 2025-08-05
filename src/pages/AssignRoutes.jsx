@@ -9,8 +9,8 @@ function AssignRoutes() {
   const [viewRouteModalOpen, setViewRouteModalOpen] = useState(false);
   // const [points, setPoints] = useState([]);
   // const [routePath, setRoutePath] = useState([]);
-const [selectedRoute, setSelectedRoute] = useState(null);
-const [showModal, setShowModal] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const [assignments, setAssignments] = useState([]);
 
@@ -40,8 +40,7 @@ const [showModal, setShowModal] = useState(false);
   const openviewRouteModal = (route) => {
     setSingleRouteData(route);
     setViewRouteModalOpen(true);
-   
-  }
+  };
 
   const getRoutes = async () => {
     try {
@@ -116,7 +115,7 @@ const [showModal, setShowModal] = useState(false);
         }
       );
       alert("Routes assigned successfully!");
-      setSelectedDriver(null)
+      setSelectedDriver(null);
       setSelectedRoutes([]);
       getAssignedRoutes();
       setOpenAssignRouteModal(false);
@@ -132,10 +131,9 @@ const [showModal, setShowModal] = useState(false);
     }
   };
   const handleRouteClick = (routeName) => {
-  setSelectedRoute(routeName);
-  setShowModal(true);
-};
-
+    setSelectedRoute(routeName);
+    setShowModal(true);
+  };
 
   const getAssignedRoutes = async () => {
     try {
@@ -147,18 +145,6 @@ const [showModal, setShowModal] = useState(false);
           },
         }
       );
-
-      // setAssignedRoutes(
-      //   response.data?.data?.assignments?.map(
-      //     (assignment) => assignment.route
-      //   ) || []
-      // );
-
-      // setAssignedDrivers(
-      //   response.data?.data?.assignments?.map(
-      //     (assignment) => assignment.driver
-      //   ) || []
-      // );
       setAssignments(response.data?.data?.assignments || []);
       alert("Assigned Routes fetched successfully!");
     } catch (error) {
@@ -186,33 +172,29 @@ const [showModal, setShowModal] = useState(false);
     setSelectedRoutes([]);
     setSelectedDriver("");
   };
- 
 
   const openViewModal = (route) => {
     setSingleRouteData(route);
     setViewRouteModalOpen(true);
   };
 
+  const groupedDrivers = {};
 
-     
-const groupedDrivers = {};
+  assignments?.forEach((assignment) => {
+    const driverId = assignment.driver.id;
+    if (!groupedDrivers[driverId]) {
+      groupedDrivers[driverId] = {
+        id: driverId,
+        name: assignment.driver.name,
+        phone: assignment.driver.phone,
+        routes: [assignment.route],
+      };
+    } else {
+      groupedDrivers[driverId].routes.push(assignment.route);
+    }
+  });
 
-assignments?.forEach((assignment) => {
-  const driverId = assignment.driver.id;
-  if (!groupedDrivers[driverId]) {
-    groupedDrivers[driverId] = {
-      id: driverId,
-      name: assignment.driver.name,
-      phone: assignment.driver.phone,
-      routes: [assignment.route],
-    };
-  } else {
-    groupedDrivers[driverId].routes.push(assignment.route);
-  }
-});
-
-const groupedList = Object.values(groupedDrivers);
-
+  const groupedList = Object.values(groupedDrivers);
 
   return (
     <div>
@@ -242,31 +224,32 @@ const groupedList = Object.values(groupedDrivers);
             </tr>
           </thead>
           <tbody>
-          {groupedList.length > 0 ? (
-  groupedList.map((driver, index) => (
-    <tr key={driver.id}>
-      <td>{index + 1}</td>
-      <td>{driver.name}</td>
-      <td>{driver.phone}</td>
-      <td>
-  {driver.routes.map((route, idx) => (
-    <button key={idx} className="btn btn-sm btn-outline-dark me-1 mb-1" onClick={() => handleRouteClick(route)}>
-      {route?.name}
-    </button>
-  ))}
-</td>
-
-    </tr>
-  ))
-) : (
-  <tr>
-    <td colSpan="4" className="text-center">
-      No assignments found
-    </td>
-  </tr>
-)}
-
-
+            {groupedList.length > 0 ? (
+              groupedList.map((driver, index) => (
+                <tr key={driver.id}>
+                  <td>{index + 1}</td>
+                  <td>{driver.name}</td>
+                  <td>{driver.phone}</td>
+                  <td>
+                    {driver.routes.map((route, idx) => (
+                      <button
+                        key={idx}
+                        className="btn btn-sm btn-outline-dark me-1 mb-1"
+                        onClick={() => handleRouteClick(route)}
+                      >
+                        {route?.name}
+                      </button>
+                    ))}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="text-center">
+                  No assignments found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -393,7 +376,9 @@ const groupedList = Object.values(groupedDrivers);
                                         </button>
                                         <button
                                           className="btn btn-outline-primary btn-sm mx-1"
-                                          onClick={() => openviewRouteModal(route)}
+                                          onClick={() =>
+                                            openviewRouteModal(route)
+                                          }
                                         >
                                           <i class="fa-solid fa-location-arrow"></i>
                                         </button>
@@ -437,62 +422,67 @@ const groupedList = Object.values(groupedDrivers);
 
       {viewRouteModalOpen && singleRouteData && (
         <RouteInfo
-        viewRouteModalOpen={viewRouteModalOpen}
+          viewRouteModalOpen={viewRouteModalOpen}
           singleRouteData={singleRouteData}
           setViewRouteModalOpen={setViewRouteModalOpen}
         />
       )}
 
-     {showModal && (
-  <div
-    className="modal fade show d-block"
-    tabIndex="-1"
-    style={{
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      backdropFilter: 'blur(0px)',
-    }}
-  >
-    <div className="modal-dialog modal-sm modal-dialog-centered">
-      <div className="modal-content shadow" style={{ borderRadius: '10px' }}>
-        <div className="modal-header text-light py-2 px-3" style={{ backgroundColor: "#1e1e2f"}}>
-          <h6 className="modal-title m-0">
-            <i className="fa-solid fa-route me-2"></i>
-            	Route: <strong>{selectedRoute.name}</strong>
-          </h6>
-         <button
-  type="button"
-  className="btn-close btn-close-white"
-  aria-label="Close"
-  onClick={() => setShowModal(false)}
-></button>
-
+      {showModal && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            backdropFilter: "blur(0px)",
+          }}
+        >
+          <div className="modal-dialog modal-sm modal-dialog-centered">
+            <div
+              className="modal-content shadow"
+              style={{ borderRadius: "10px" }}
+            >
+              <div
+                className="modal-header text-light py-2 px-3"
+                style={{ backgroundColor: "#1e1e2f" }}
+              >
+                <h6 className="modal-title m-0">
+                  <i className="fa-solid fa-route me-2"></i>
+                  Route: <strong>{selectedRoute.name}</strong>
+                </h6>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  aria-label="Close"
+                  onClick={() => setShowModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body text-center">
+                <p className="mb-3">What would you like to do?</p>
+                <button
+                  className="btn btn-outline-primary w-100 mb-2"
+                  onClick={() => {
+                    openviewRouteModal(selectedRoute);
+                    setShowModal(false);
+                  }}
+                >
+                  <i className="fa-solid fa-map-location-dot me-2"></i> See on
+                  Map
+                </button>
+                <button
+                  className="btn btn-outline-danger w-100"
+                  onClick={() => {
+                    setShowModal(false);
+                    console.log("Unassigning route:", selectedRoute.name);
+                  }}
+                >
+                  <i className="fa-solid fa-trash-can me-2"></i> Unassign
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="modal-body text-center">
-          <p className="mb-3">What would you like to do?</p>
-          <button
-            className="btn btn-outline-primary w-100 mb-2"
-            onClick={() => {
-              openviewRouteModal(selectedRoute);
-              setShowModal(false);
-            }}
-          >
-            <i className="fa-solid fa-map-location-dot me-2"></i> See on Map
-          </button>
-          <button
-            className="btn btn-outline-danger w-100"
-            onClick={() => {
-              setShowModal(false);
-              console.log('Unassigning route:', selectedRoute.name);
-            }}
-          >
-            <i className="fa-solid fa-trash-can me-2"></i> Unassign
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
+      )}
     </div>
   );
 }
